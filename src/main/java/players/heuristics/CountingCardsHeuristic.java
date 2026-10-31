@@ -224,7 +224,13 @@ public class CountingCardsHeuristic implements IStateHeuristic {
                     expectedScore.putIfAbsent(SGCard.SGCardType.Wasabi, maxEstimatedScore);
                     break;
                 case Chopsticks:
-                    // handle Chopsticks
+
+                    // If there are no chopsticks on the then ignore it.
+                    if (gameState.getPlayedCardTypes(SGCard.SGCardType.Chopsticks, playerId).getValue() == 0) {
+                        break;
+                    }
+                    // Using the R value we will score it high when we are early in the round and it will deminish as time goes on
+                    expectedScore.putIfAbsent(SGCard.SGCardType.Chopsticks, Math.min(3.0, 0.4 * R));
                     break;
                 case Pudding:
                     int myPudding = gameState.getPlayedCardTypes(SGCard.SGCardType.Pudding, playerId).getValue();
@@ -383,6 +389,7 @@ public class CountingCardsHeuristic implements IStateHeuristic {
     private double survival(List<Integer> survialChanceTheHandBeforeItReachsMainPlayer) {
         double result = 1;
 
+        // TODO: Maybe make it dynamic. If my opponent has a tempura on the table, increase probability.
         for (Integer player :  survialChanceTheHandBeforeItReachsMainPlayer) {
             result *= (1 - 0.25);
         }
