@@ -71,9 +71,9 @@ The reference point is fixed in advance from the game's structure. With 4 player
 
 **Units depend on the player's tree:**
 - **Rollout length** always counts **single actions**, because the rollout plays one random action at a time.
-- **Max tree depth** counts **one tree level**. In `sushiGoDecoupled` (decoupled UCT), one level is a whole **turn**, because each node's `expand()` applies all 4 players' picks together. In packages built on TAG's BasicMCTS (e.g. `sushiGoCardCountingAgent`, `sushiGoSushiHeuristicAgent`), one level is **one player's action**, so depth 8 there is 2 turns.
+- **Max tree depth** counts **one tree level**. In `groupP` (decoupled UCT), one level is a whole **turn**, because each node's `expand()` applies all 4 players' picks together. In packages built on TAG's BasicMCTS (e.g. `sushiGoCardCountingAgent`, `sushiGoSushiHeuristicAgent`), one level is **one player's action**, so depth 8 there is 2 turns.
 
-Labels below are for `sushiGoDecoupled`:
+Labels below are for `groupP`:
 
 | Run | K | Max depth (turns) | Rollout (actions) | Varies |
 |---|---|---|---|---|
@@ -138,7 +138,7 @@ Every run is a separate Java process using about 1 CPU core. **Don't run more in
 python3 parameter-study/run_study.py PACKAGE [options]
 ```
 
-**`PACKAGE`** is the folder under `src/main/java/players/`, e.g. `sushiGoDecoupled`, `sushiGoCardCountingAgent` or `sushiGoSushiHeuristicAgent`. The script finds the class in it that extends `PlayerParameters`. It checks that the class has tunable `K`, `rolloutLength` and `maxTreeDepth` parameters, and that `instantiate()` passes `this.copy()` to the player. Without that, the JSON settings would be silently ignored.
+**`PACKAGE`** is the folder under `src/main/java/players/`, e.g. `groupP`, `sushiGoCardCountingAgent` or `sushiGoSushiHeuristicAgent`. The script finds the class in it that extends `PlayerParameters`. It checks that the class has tunable `K`, `rolloutLength` and `maxTreeDepth` parameters, and that `instantiate()` passes `this.copy()` to the player. Without that, the JSON settings would be silently ignored.
 
 | Option | Default | Meaning |
 |---|---|---|

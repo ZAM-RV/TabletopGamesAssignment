@@ -1,4 +1,4 @@
-package players.sushiGoDecoupled;
+package players.groupP;
 
 import core.AbstractGameState;
 import core.AbstractPlayer;
@@ -14,20 +14,20 @@ import java.util.Random;
  * It strips out some of the additional configuration of MCTSPlayer. It uses BasicTreeNode in place of
  * SingleTreeNode.
  */
-public class BasicMCTSPlayer extends AbstractPlayer {
+public class DecoupledUCTMCTSPlayer extends AbstractPlayer {
 
-    public BasicMCTSPlayer() {
+    public DecoupledUCTMCTSPlayer() {
         this(System.currentTimeMillis());
     }
 
-    public BasicMCTSPlayer(long seed) {
-        super(new BasicMCTSParams(), "Basic MCTS");
+    public DecoupledUCTMCTSPlayer(long seed) {
+        super(new DecoupledUCTMCTSParams(), "Basic MCTS");
         // for clarity we create a new set of parameters here, but we could just use the default parameters
         parameters.setRandomSeed(seed);
         rnd = new Random(seed);
 
         // These parameters can be changed, and will impact the Basic MCTS algorithm
-        BasicMCTSParams params = getParameters();
+        DecoupledUCTMCTSParams params = getParameters();
         params.K = Math.sqrt(2);
         params.rolloutLength = 10;
         params.maxTreeDepth = 5;
@@ -35,7 +35,7 @@ public class BasicMCTSPlayer extends AbstractPlayer {
 
     }
 
-    public BasicMCTSPlayer(BasicMCTSParams params) {
+    public DecoupledUCTMCTSPlayer(DecoupledUCTMCTSParams params) {
         super(params, "Basic MCTS");
         rnd = new Random(params.getRandomSeed());
     }
@@ -43,7 +43,7 @@ public class BasicMCTSPlayer extends AbstractPlayer {
     @Override
     public AbstractAction _getAction(AbstractGameState gameState, List<AbstractAction> actions) {
         // Search for best action from the root
-        BasicTreeNode root = new BasicTreeNode(this, null, gameState, rnd);
+        DecoupledUCTTreeNode root = new DecoupledUCTTreeNode(this, null, gameState, rnd);
 
         // mctsSearch does all of the hard work
         root.mctsSearch();
@@ -53,8 +53,8 @@ public class BasicMCTSPlayer extends AbstractPlayer {
     }
 
     @Override
-    public BasicMCTSParams getParameters() {
-        return (BasicMCTSParams) parameters;
+    public DecoupledUCTMCTSParams getParameters() {
+        return (DecoupledUCTMCTSParams) parameters;
     }
 
     public void setStateHeuristic(IStateHeuristic heuristic) {
@@ -68,8 +68,8 @@ public class BasicMCTSPlayer extends AbstractPlayer {
     }
 
     @Override
-    public BasicMCTSPlayer copy() {
-        BasicMCTSPlayer retValue = new BasicMCTSPlayer((BasicMCTSParams) parameters.copy());
+    public DecoupledUCTMCTSPlayer copy() {
+        DecoupledUCTMCTSPlayer retValue = new DecoupledUCTMCTSPlayer((DecoupledUCTMCTSParams) parameters.copy());
         retValue.setName(toString());
         return retValue;
     }

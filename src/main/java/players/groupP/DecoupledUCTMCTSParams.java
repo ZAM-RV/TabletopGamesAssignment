@@ -1,4 +1,4 @@
-package players.sushiGoDecoupled;
+package players.groupP;
 
 import core.AbstractGameState;
 import core.interfaces.IStateHeuristic;
@@ -7,7 +7,7 @@ import players.PlayerParameters;
 import java.util.Arrays;
 
 
-public class BasicMCTSParams extends PlayerParameters {
+public class DecoupledUCTMCTSParams extends PlayerParameters {
 
     public double K = Math.sqrt(2);
     public int rolloutLength = 10; // assuming we have a good heuristic
@@ -16,7 +16,7 @@ public class BasicMCTSParams extends PlayerParameters {
     public IStateHeuristic heuristic = AbstractGameState::getHeuristicScore;
     public boolean restrictToCurrentRound = false;
 
-    public BasicMCTSParams() {
+    public DecoupledUCTMCTSParams() {
         addTunableParameter("K", Math.sqrt(2), Arrays.asList(0.0, 0.1, 1.0, Math.sqrt(2), 3.0, 10.0));
         addTunableParameter("rolloutLength", 10, Arrays.asList(0, 3, 10, 30, 100));
         addTunableParameter("maxTreeDepth", 100, Arrays.asList(1, 3, 10, 30, 100));
@@ -37,11 +37,11 @@ public class BasicMCTSParams extends PlayerParameters {
     }
 
     @Override
-    protected BasicMCTSParams _copy() {
+    protected DecoupledUCTMCTSParams _copy() {
         // All the copying is done in TunableParameters.copy()
         // Note that any *local* changes of parameters will not be copied
         // unless they have been 'registered' with setParameterValue("name", value)
-        return new BasicMCTSParams();
+        return new DecoupledUCTMCTSParams();
     }
 
     @Override
@@ -50,8 +50,8 @@ public class BasicMCTSParams extends PlayerParameters {
     }
 
     @Override
-    public BasicMCTSPlayer instantiate() {
-        return new BasicMCTSPlayer((BasicMCTSParams) this.copy());
+    public DecoupledUCTMCTSPlayer instantiate() {
+        return new DecoupledUCTMCTSPlayer((DecoupledUCTMCTSParams) this.copy());
     }
 
 }

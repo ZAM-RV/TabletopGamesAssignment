@@ -1,0 +1,12 @@
+{
+  "class": "players.sushiGoDecoupled.BasicMCTSParams",
+  "K": 20.0,
+  "rolloutLength": 32,
+  "maxTreeDepth": 8,
+  "restrictToCurrentRound": false,
+  "heuristic": {
+    "class": "players.heuristics.ScoreHeuristic"
+  },
+  "budgetType": "BUDGET_TIME",
+  "budget": 500
+}

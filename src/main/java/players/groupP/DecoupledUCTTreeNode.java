@@ -1,4 +1,4 @@
-package players.sushiGoDecoupled;
+package players.groupP;
 
 import core.AbstractGameState;
 import core.actions.AbstractAction;
@@ -12,13 +12,13 @@ import static java.util.stream.Collectors.toList;
 import static players.PlayerConstants.*;
 import static utilities.Utils.noise;
 
-class BasicTreeNode {
+class DecoupledUCTTreeNode {
     // Root node of tree
-    BasicTreeNode root;
+    DecoupledUCTTreeNode root;
     // Parent of this node
-    BasicTreeNode parent;
+    DecoupledUCTTreeNode parent;
     // Children of this node. It is now a list of actions that lead to a new node.
-    Map<List<AbstractAction>, BasicTreeNode> jointActionChildren = new HashMap<>();
+    Map<List<AbstractAction>, DecoupledUCTTreeNode> jointActionChildren = new HashMap<>();
     // Depth of this node
     final int depth;
 
@@ -35,14 +35,14 @@ class BasicTreeNode {
 
     private int fmCallsCount;
     // Parameters guiding the search
-    private BasicMCTSPlayer player;
+    private DecoupledUCTMCTSPlayer player;
     private Random rnd;
     private RandomPlayer randomPlayer = new RandomPlayer();
 
     // State in this node (closed loop)
     private AbstractGameState state;
 
-    protected BasicTreeNode(BasicMCTSPlayer player, BasicTreeNode parent, AbstractGameState state, Random rnd) {
+    protected DecoupledUCTTreeNode(DecoupledUCTMCTSPlayer player, DecoupledUCTTreeNode parent, AbstractGameState state, Random rnd) {
         this.player = player;
         this.fmCallsCount = 0;
         this.nVisits = 0;
@@ -58,17 +58,17 @@ class BasicTreeNode {
         randomPlayer.setForwardModel(player.getForwardModel());
     }
 
-    protected BasicTreeNode(BasicMCTSPlayer player, BasicTreeNode parent, AbstractGameState state, Random rnd, List<AbstractAction> incomingJointAction) {
+    protected DecoupledUCTTreeNode(DecoupledUCTMCTSPlayer player, DecoupledUCTTreeNode parent, AbstractGameState state, Random rnd, List<AbstractAction> incomingJointAction) {
         this(player, parent, state, rnd);
         this.incomingJointAction = incomingJointAction;
     }
 
     /**
-     * Performs full MCTS search, using the defined budget limits.
+     * Performs full Decoupled UCT MCTS search, using the defined budget limits.
      */
     void mctsSearch() {
 
-        BasicMCTSParams params = player.getParameters();
+        DecoupledUCTMCTSParams params = player.getParameters();
 
         // Variables for tracking time budget
         double avgTimeTaken;
@@ -90,7 +90,7 @@ class BasicTreeNode {
             ElapsedCpuTimer elapsedTimerIteration = new ElapsedCpuTimer();
 
             // Selection + expansion: navigate tree until a node not fully expanded is found, add a new node to the tree
-            BasicTreeNode selected = treePolicy();
+            DecoupledUCTTreeNode selected = treePolicy();
             // Monte carlo rollout: return value of MC rollout from the newly added node
             double[] delta = selected.rollOut();
             // Back up the value of the rollout through the tree
@@ -123,12 +123,12 @@ class BasicTreeNode {
      *
      * @return - new node added to the tree.
      */
-    private BasicTreeNode treePolicy() {
-        BasicTreeNode cur = this;
+    private DecoupledUCTTreeNode treePolicy() {
+        DecoupledUCTTreeNode cur = this;
 
         while (cur.state.isNotTerminal() && cur.depth < player.getParameters().maxTreeDepth) {
             List<AbstractAction> joint = cur.jointDecoupledUCB();
-            BasicTreeNode child = cur.jointActionChildren.get(joint);
+            DecoupledUCTTreeNode child = cur.jointActionChildren.get(joint);
 
             if (child == null) {
                 return cur.expand(joint);
@@ -174,7 +174,7 @@ class BasicTreeNode {
      *
      * @return - new child node.
      */
-    private BasicTreeNode expand(List<AbstractAction> jointActions) {
+    private DecoupledUCTTreeNode expand(List<AbstractAction> jointActions) {
 
         AbstractGameState stateCopy = state.copy();
 
@@ -196,7 +196,7 @@ class BasicTreeNode {
             }
         }
 
-        BasicTreeNode childNode = new BasicTreeNode(player, this, stateCopy, rnd, jointActions);
+        DecoupledUCTTreeNode childNode = new DecoupledUCTTreeNode(player, this, stateCopy, rnd, jointActions);
         jointActionChildren.put(jointActions, childNode);
         return childNode;
     }
@@ -212,8 +212,12 @@ class BasicTreeNode {
         root.fmCallsCount++;
     }
 
+    /**
+     *
+     * Calcuated UCB for each player seperately
+     */
     private List<AbstractAction> jointDecoupledUCB() {
-        BasicMCTSParams params = player.getParameters();
+        DecoupledUCTMCTSParams params = player.getParameters();
 
         List<AbstractAction> joint = new ArrayList<>(state.getNPlayers());
 
@@ -238,6 +242,7 @@ class BasicTreeNode {
                     uctValue = actionValue + explorationTerm;
                 }
 
+                // Noise added to distinguish between tie breakers
                 uctValue = noise(uctValue,params.epsilon, player.getRnd().nextDouble());
 
                 if (uctValue > bestValue) {
@@ -286,6 +291,7 @@ class BasicTreeNode {
 
     /**
      * Checks if rollout is finished. Rollouts end on maximum length, or if game ended.
+     * Or if restrictToRound field is set to true, end rollout at the end of the round
      *
      * @param rollerState - current state
      * @param depth       - current depth
@@ -295,6 +301,7 @@ class BasicTreeNode {
         if (depth >= player.getParameters().rolloutLength)
             return true;
 
+        // New parameter, which ends the rollout at the end of the round.
         if (player.getParameters().restrictToCurrentRound) {
             if (rollerState.getRoundCounter() > currentRound) {
                 return true;
@@ -312,11 +319,11 @@ class BasicTreeNode {
      */
 
     private void backUp(double[] playerResults) {
-        BasicTreeNode n = this;
+        DecoupledUCTTreeNode n = this;
         n.nVisits += 1;
 
         while (n.parent != null) {
-            BasicTreeNode par = n.parent;
+            DecoupledUCTTreeNode par = n.parent;
             par.nVisits += 1;
 
             for (int i = 0; i < par.playerOrder.size(); i++) {
