@@ -17,13 +17,11 @@ class BasicTreeNode {
     BasicTreeNode root;
     // Parent of this node
     BasicTreeNode parent;
-    // Children of this node
+    // Children of this node. It is now a list of actions that lead to a new node.
     Map<List<AbstractAction>, BasicTreeNode> jointActionChildren = new HashMap<>();
     // Depth of this node
     final int depth;
 
-    // Total value of this node TODO: DELETE THIS
-//    private double totValue;
     // Number of visits
     private int nVisits;
     // Number of FM calls and State copies up until this node
@@ -32,6 +30,7 @@ class BasicTreeNode {
 
     List<Integer> playerOrder = new ArrayList<>();
 
+    // This is used when doing backwards propagaion to find the previous joint actions which lead to this node
     List<AbstractAction> incomingJointAction;
 
     private int fmCallsCount;
@@ -148,7 +147,7 @@ class BasicTreeNode {
 
         int currentPlayer = stateCopy.getCurrentPlayer();
 
-        // Use stats to ensure that we haven't already initialized this current players
+        // Use stats to ensure that we haven't already initialized this current players. Essentially we want to make sure that the new node contains table of stats
         while (stateCopy.isNotTerminal() && !playerStatistics.containsKey(currentPlayer)) {
             var actions = player.getForwardModel().computeAvailableActions(stateCopy, player.getParameters().actionSpace);
             for (AbstractAction action : actions) {
@@ -157,6 +156,7 @@ class BasicTreeNode {
 
             jointActionChildren.putIfAbsent(actions, null);
             playerOrder.add(currentPlayer);
+            // The action that we choose here is not important. As we are mainly concerned with making sure that all players have initialized there decoupled uct table
             advance(stateCopy, actions.get(0));
             currentPlayer = stateCopy.getCurrentPlayer();
         }
@@ -187,6 +187,7 @@ class BasicTreeNode {
 
             advance(stateCopy, jointActions.get(i).copy());
 
+            // this while loop is mainly used for chopstick moves. As they count as two moves.
             while (stateCopy.isNotTerminal() && stateCopy.isActionInProgress()
                     && stateCopy.getCurrentPlayer() == mover) {
                 List<AbstractAction> extra = player.getForwardModel()
@@ -212,7 +213,6 @@ class BasicTreeNode {
     }
 
     private List<AbstractAction> jointDecoupledUCB() {
-        // Find child with highest UCB value, maximising for ourselves and minimizing for opponent
         BasicMCTSParams params = player.getParameters();
 
         List<AbstractAction> joint = new ArrayList<>(state.getNPlayers());
@@ -226,6 +226,7 @@ class BasicTreeNode {
                 AbstractAction action = entry.getKey();
                 ActionStats actionStats = entry.getValue();
                 double uctValue;
+                // We have a hard condition to ensure that each child node is expanded at least one. By setting the uctValue very high this ensures this
                 if (actionStats.visits == 0) {
                     uctValue = 1e9;
                 } else {

@@ -67,20 +67,26 @@ When it finishes, open `parameter-study/results/sushiGoDecoupled/report.html` in
 
 ### 4.2 Stage 1: one factor at a time, 100 ms
 
-The reference point is fixed in advance from the game's structure. In TAG each player acts in turn, so 1 trick = 4 actions and 1 round = 8 tricks = 32 actions.
+The reference point is fixed in advance from the game's structure. With 4 players, each player starts a round with 8 cards. A **turn** is every player picking one card from their hand, revealing it, and passing the rest of the hand on. So a round is 8 turns, and since TAG asks the 4 players for their picks one after another, a turn is 4 actions and a round is 32 actions.
 
-| Run | K | Max depth | Rollout | Varies |
+**Units depend on the player's tree:**
+- **Rollout length** always counts **single actions**, because the rollout plays one random action at a time.
+- **Max tree depth** counts **one tree level**. In `sushiGoDecoupled` (decoupled UCT), one level is a whole **turn**, because each node's `expand()` applies all 4 players' picks together. In packages built on TAG's BasicMCTS (e.g. `sushiGoCardCountingAgent`, `sushiGoSushiHeuristicAgent`), one level is **one player's action**, so depth 8 there is 2 turns.
+
+Labels below are for `sushiGoDecoupled`:
+
+| Run | K | Max depth (turns) | Rollout (actions) | Varies |
 |---|---|---|---|---|
 | K1 | **1** | 8 | 32 | K |
 | K5 | **5** | 8 | 32 | K |
-| **REF** | **10** | **8** (2 tricks) | **32** (1 round) | (reference) |
+| **REF** | **10** | **8** (1 round) | **32** (1 round) | (reference) |
 | K20 | **20** | 8 | 32 | K |
-| D4 | 10 | **4** (1 trick) | 32 | depth |
-| D16 | 10 | **16** (4 tricks) | 32 | depth |
+| D4 | 10 | **4** (½ round) | 32 | depth |
+| D16 | 10 | **16** (2 rounds) | 32 | depth |
 | R16 | 10 | 8 | **16** (½ round) | rollout |
 | R64 | 10 | 8 | **64** (2 rounds) | rollout |
 
-Depth and rollout use three levels that double each time (×½, ×1, ×2), and REF is the shared middle point of every sweep.
+Depth and rollout use three levels that double each time (×½, ×1, ×2), and REF is the shared middle point of every sweep. Under the default design, the reference covers one round of look-ahead in the tree plus one round of random rollout after it.
 
 ### 4.3 Selection
 The **3 runs with the highest win rate** in stage 1 go to stage 2. Ties are broken by mean score. The script makes this choice, not the author. The result is saved in `selection.json`.

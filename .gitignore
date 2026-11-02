@@ -6,9 +6,13 @@
 
 /overnight-experiments
 
-/experiments-round2
+/experiments
 
-/experiments-final
+/experiments*
+
+/parameter-study/*
+
+/experiments
 
 # Eclipse metadata
 .classpath/

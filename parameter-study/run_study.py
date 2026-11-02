@@ -414,8 +414,9 @@ def parse_args():
                         "(VALUE is read as JSON; repeatable)")
     g = p.add_argument_group("design (defaults = the pre-registered study)")
     g.add_argument("--ref-k", type=float, default=10.0)
-    g.add_argument("--ref-depth", type=int, default=8, help="2 tricks of 4 actions")
-    g.add_argument("--ref-rollout", type=int, default=32, help="1 round = 8 tricks x 4 actions")
+    g.add_argument("--ref-depth", type=int, default=8,
+                   help="tree levels; in sushiGoDecoupled 1 level = 1 turn (all 4 picks), so 8 = 1 round")
+    g.add_argument("--ref-rollout", type=int, default=32, help="single actions; 32 = 8 turns x 4 players = 1 round")
     g.add_argument("--k-values", type=float, nargs="+", default=[1, 5, 20], help="K levels besides the reference")
     g.add_argument("--depth-values", type=int, nargs="+", default=[4, 16])
     g.add_argument("--rollout-values", type=int, nargs="+", default=[16, 64])
